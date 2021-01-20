@@ -1,7 +1,7 @@
 Welcome to the comma.ai Calibration Challenge!
 ======
 
-Your goal is to predict the direction of travel (in camera frame) from dashcam video.
+Your goal is to predict the direction of travel (in camera frame) from provided dashcam video.
 
 - This repo provides 10 videos. Every video is 1min long and 20 fps.
 - 5 videos are labeled with a 2D array describing the direction of travel at every frame of the video
