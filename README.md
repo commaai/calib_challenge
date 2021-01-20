@@ -7,7 +7,7 @@ Your goal is to predict the direction of travel (in camera frame) from provided 
 - 5 videos are labeled with a 2D array describing the direction of travel at every frame of the video
   with a pitch and yaw angle in radians.
 - 5 videos are unlabeled. It is your task to generate the labels for them.
-- The labels are generated using a Neural Network, and the labels were confirmed with a SLAM algorithm.
+- The example labels are generated using a Neural Network, and the labels were confirmed with a SLAM algorithm.
 - You can estimate the focal length to be 910 pixels.
 
 Deliverable
@@ -18,8 +18,8 @@ Your deliverable is the 5 labels called 5.txt to 9.txt. Zip them up and e-mail i
 Evaluation
 -----
 
-We will evaluate your mean squared error. Errors for frames where the car speed is less than 1m/s will be ignored.
-Those are also labeled as NaN in the example labels.
+We will evaluate your mean squared error against our ground truth labels. Errors for frames where the car
+speed is less than 4m/s will be ignored. Those are also labeled as NaN in the example labels.
 
 Context
 ------
