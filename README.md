@@ -21,7 +21,10 @@ frame. More info  can be found in [this readme](https://github.com/commaai/openp
 Deliverable
 -----
 
-Your deliverable is the 5 labels called 5.txt to 9.txt. Zip them up and e-mail it to givemeajob@comma.ai.
+Your deliverable is the 5 labels called 5.txt to 9.txt. These labels should be a 2D array that contains
+the pitch and yaw angles of the direction of travel (in camera frame) of every frame of the respective videos.
+Zip them up and e-mail it to givemeajob@comma.ai.
+
 
 Evaluation
 -----
