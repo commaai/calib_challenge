@@ -10,6 +10,14 @@ Your goal is to predict the direction of travel (in camera frame) from provided 
 - The example labels are generated using a Neural Network, and the labels were confirmed with a SLAM algorithm.
 - You can estimate the focal length to be 910 pixels.
 
+Context
+------
+The devices that run [openpilot](https://github.com/commaai/openpilot/) are not mounted perfectly. The camera
+is not exactly aligned to the vehicle. There is some pitch and yaw angle between the camera of the device and
+the vehicle, which can vary between installations. Estimating these angles is essential for accurate control
+of the vehicle. The best way to start estimating these values is to predict the direction of motion in camera
+frame. More info  can be found in [this readme](https://github.com/commaai/openpilot/tree/master/common/transformations).
+
 Deliverable
 -----
 
@@ -21,13 +29,6 @@ Evaluation
 We will evaluate your mean squared error against our ground truth labels. Errors for frames where the car
 speed is less than 4m/s will be ignored. Those are also labeled as NaN in the example labels.
 
-Context
-------
-The devices that run [openpilot](https://github.com/commaai/openpilot/) are not mounted perfectly. The camera
-is not exactly aligned to the vehicle. There is some pitch and yaw angle between the camera of the device and
-the vehicle, which can vary between installations. Estimating these angles is essential for accurate control
-of the vehicle. The best way to start estimating these values is to predict the direction of motion in camera
-frame. More info  can be found in [this readme](https://github.com/commaai/openpilot/tree/master/common/transformations).
 
 
 Twitter
