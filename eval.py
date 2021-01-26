@@ -28,4 +28,4 @@ for i in range(0,5):
   mses.append(get_mse(gt, test))
 
 percent_err_vs_all_zeros = 100*np.mean(mses)/np.mean(zero_mses)
-print(f'YOUR ERROR IS {percent_err_vs_all_zeros:.2f}%')
+print(f'YOUR ERROR SCORE IS {percent_err_vs_all_zeros:.2f}%')
