@@ -5,7 +5,7 @@ import sys
 if len(sys.argv) > 1:
   TEST_DIR = sys.argv[1]
 else:
-  TEST_DIR = None
+  raise RuntimeError('No test directory provided')
 GT_DIR = 'labeled/'
 
 def get_mse(gt, test):
@@ -24,11 +24,8 @@ for i in range(0,5):
   gt = np.loadtxt(GT_DIR + str(i) + '.txt')
   zero_mses.append(get_mse(gt, np.zeros_like(gt)))
 
-  if TEST_DIR is not None:
-    test = np.loadtxt(TEST_DIR + str(i) + '.txt')
-    mses.append(get_mse(gt, test))
-  else:
-    mses.append(np.nan)
+  test = np.loadtxt(TEST_DIR + str(i) + '.txt')
+  mses.append(get_mse(gt, test))
 
 percent_err_vs_all_zeros = 100*np.mean(mses)/np.mean(zero_mses)
 print(f'YOUR ERROR IS {percent_err_vs_all_zeros:.2f}%')
