@@ -32,10 +32,16 @@ Evaluation
 We will evaluate your mean squared error against our ground truth labels. Errors for frames where the car
 speed is less than 4m/s will be ignored. Those are also labeled as NaN in the example labels.
 
+This repo includes an eval script that will give an error score (lower is better). You can use it to test your
+solutions against the labeled examples. We will use this script to evaluate your solution. 
 
 
-Twitter
+Hints
 ------
+- Keep the goal and evaluation script in mind, creative solutions are allowed.
+- look at plots of your solutions before submitting
 
-<a href="https://twitter.com/comma_ai">Follow us!</a>
 
+$500 Prize
+------
+The first submission that scores an error 25% on the unlabeled set, will receive a $500 prize.
