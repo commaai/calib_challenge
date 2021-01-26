@@ -39,9 +39,9 @@ solutions against the labeled examples. We will use this script to evaluate your
 Hints
 ------
 - Keep the goal and evaluation script in mind, creative solutions are allowed.
-- look at plots of your solutions before submitting
+- Look at plots of your solutions before submitting.
 
 
 $500 Prize
 ------
-The first submission that scores an error 25% on the unlabeled set, will receive a $500 prize.
+The first submission that scores an error under 25% on the unlabeled set, will receive a $500 prize.
