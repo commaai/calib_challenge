@@ -42,6 +42,6 @@ Hints
 - Look at plots of your solutions before submitting.
 
 
-$500 Prize
+<s> $500 Prize </s> CLAIMED
 ------
 The first submission that scores an error under 25% on the unlabeled set, will receive a $500 prize.
