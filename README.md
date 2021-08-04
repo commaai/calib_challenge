@@ -43,6 +43,7 @@ Hints
 ------
 - Keep the goal and evaluation script in mind, creative solutions are allowed.
 - Look at plots of your solutions before submitting.
+- The dataset is tiny, use ML with caution.
 
 
 <s> $500 Prize </s> CLAIMED
