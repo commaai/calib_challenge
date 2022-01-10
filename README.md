@@ -10,7 +10,7 @@ Goal is to predict the direction of travel (in camera frame) from provided dashc
 - The focal length is asked to be assumed 910 pixels.
 
 
-![picture](https://user-images.githubusercontent.com/6804392/116619874-e78a8180-a8f5-11eb-93e3-c9c852726db8.png)
+![picture](img/imgsSideBySide.png)
 
 Context for the challenge
 ------
