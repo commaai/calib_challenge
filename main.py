@@ -6,9 +6,18 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from numpy.ma.core import size
 
-class Processing:
+class Processing(object):
     def __init__(self):
         self.focalLen = 910
+        self.height = 880
+        self.width = 1200
+        self.Y = 16
+        self.X = 16
+
+    def featureExtractor(self, img):
+        for y in range(0, self.height, self.Y):
+            for x in range(0, self.wifth, self.X):
+                pass
         
     def process_frame(self, img):
         height, width, z = img.shape
@@ -22,7 +31,7 @@ class Processing:
             cv2.circle(img, (u,v), color=(0,255,0), radius=1)
             # img2 = cv2.drawKeypoints(img, kp, None, color=(50, 255, 0))
         
-        self.drawImg("Keypoints on Img", img, kp)
+        # self.drawImg("Keypoints on Img", img, kp)
         
         return img, kp, des
     
@@ -53,15 +62,26 @@ if __name__ == "__main__":
     # fps= int(cap.get(cv2.CAP_PROP_FPS))
     # print("This is the fps ", fps)
     
+    isFirstFrame = True
     while cap.isOpened():
-        prevFrame = None
         ret, currentFrame= cap.read()
-        prevFrame = currentFrame
         if ret == True:
             img2, kp2, des2 = check.process_frame(currentFrame)
-            img1 = img2
-            kp1 = kp2
-            des1 = des2
-            # check.matcher(img1, kp1, img2, kp2, des1, des2)
+            
+            if isFirstFrame:
+                print("First", isFirstFrame)
+                isFirstFrame = False
+                
+                img1 = img2
+                kp1 = kp2
+                des1 = des2
+            else:
+                check.matcher(img1, kp1, img2, kp2, des1, des2)
+            
+                img1 = img2
+                kp1 = kp2
+                des1 = des2
+            
+        
         else:
             break
