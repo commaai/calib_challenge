@@ -1,4 +1,8 @@
 import cv2, subprocess
+from optical_flow import getYawPitch, displayYawPitch
+
+textFilePath = "./labeled/0.txt"
+yawList, pitchList = getYawPitch(textFilePath)
 
 def play_hevc_file(file_path):
     try:
@@ -20,7 +24,7 @@ def extract_frames(video_path):
     
     frame_count = 0
     
-    #while True:
+    while True:
         # Read a frame from the video
         ret, frame = cap.read()
         
@@ -36,12 +40,13 @@ def extract_frames(video_path):
         sample = cv2.imread(frame_filename)
 
         print(f"Extracted frame: {frame_filename}")
+        displayYawPitch(sample, pitchList, yawList, frame_count)
 
         cv2.imshow("Image", sample)
         # Wait for the user to press a key
-        cv2.waitKey(0)
+        #cv2.waitKey(0)
         # Close all windows
-        cv2.destroyAllWindows()
+        #cv2.destroyAllWindows()
         
         frame_count += 1
         break

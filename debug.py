@@ -36,12 +36,14 @@ image = cv2.imread(imagePath)
 x = 10
 y = 30
 
-cv2.putText(image, pitch[0], (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+formattedPitch = format(float(pitch[0]), ".4g")
+cv2.putText(image, formattedPitch, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
 x = 600
 y = 30
 
-cv2.putText(image, yaw[0], (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+#formattedYaw = format(yaw[0], ".4g")
+#cv2.putText(image, formattedYaw, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
 cv2.imshow("Image", image)
 
