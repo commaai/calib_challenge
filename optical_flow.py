@@ -2,9 +2,10 @@ import numpy as np
 import cv2 as cv
 import argparse, math, time
 from line_detect import getLines
+from line_detect2 import frame_processor, region_selection, canny_edge_detector
 
-videoPath = "./labeled/2.hevc"
-textPath = "./labeled/2.txt"
+import os
+
 
 def getYawPitch(file_path):
 
@@ -47,6 +48,15 @@ def addYawPitch(image, pitchList, yawList, frameNumber):
 
 
 if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='Process an image using OpenCV.')
+    parser.add_argument('data', type=str, help='Path to the data file set')
+    args = parser.parse_args()
+
+    # Read the image path from the command-line argument
+    videoPath = os.path.join(args.data + ".hevc")
+    textPath = os.path.join(args.data + ".txt")
+
     cap = cv.VideoCapture(videoPath)
     #cap = cv.VideoCapture(args.image)
 
@@ -75,7 +85,7 @@ if __name__ == '__main__':
     mask = np.zeros_like(old_frame)
 
     pitchList, yawList = getYawPitch(textPath)
-    print(len(pitchList))
+    print("total frames: ", len(pitchList))
 
     frameNumber = 0
     x1 = 10
@@ -106,6 +116,16 @@ if __name__ == '__main__':
 
         startTime = time.time()
 
+        image, lines = getLines(frame)   
+
+        cv.imshow('frame', image)
+
+        k = cv.waitKey(30) & 0xff
+
+        if k == 27:
+            break
+
+        '''
         # draw the tracks
         for i, (new, old) in enumerate(zip(good_new, good_old)):
             a, b = new.ravel()
@@ -114,11 +134,15 @@ if __name__ == '__main__':
             lineLength = math.sqrt((a-c)**2 + (b-d)**2)
 
             if(lineLength > 10):
-                mask = cv.line(mask, (int(a), int(b)), (int(c), int(d)), color[i].tolist(), 2)
+                #mask = cv.line(mask, (int(a), int(b)), (int(c), int(d)), color[i].tolist(), 2)
                 #frame = cv.circle(frame, (int(a), int(b)), 5, color[i].tolist(), -1)
-                image = cv.add(frame, mask)
 
-                image = addYawPitch(image, pitchList, yawList, frameNumber)
+                cannyEdge = canny_edge_detector(image)
+                regionFilter = region_selection(cannyEdge)
+
+                image = cv.add(regionFilter, mask)
+
+                #image = addYawPitch(image, pitchList, yawList, frameNumber)
                 image, lineLength = getLines(image)
 
                 #cv.putText(img, pitchList[frameNumber], (x1, y), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
@@ -131,7 +155,8 @@ if __name__ == '__main__':
                 if k == 27:
                     break
                 
-                cv.imshow('frame', image)
+                
+        '''
 
         # Now update the previous frame and previous points
 
@@ -147,5 +172,6 @@ if __name__ == '__main__':
         p0 = good_new.reshape(-1, 1, 2)
 
         frameNumber += 1
+
 
     cv.destroyAllWindows()

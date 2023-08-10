@@ -2,6 +2,12 @@ import cv2
 import numpy as np
 import argparse
 
+from contrast_test import increaseContrast
+
+MAX_LINE_SLOPE = 1.5
+MIN_LINE_SLOPE = 0.1
+MIN_LINE_LENGTH = 80
+
 def absoluteSlopeOfLine(x1, y1, x2, y2):
     return abs((y2-y1)/(x2-x1))
 
@@ -12,22 +18,31 @@ def lengthOfLine(x1, y1, x2, y2):
 def getLines(image):
 
     # Convert image to grayscale
+
+    image = region_selection(image)
+
     gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+
+    #contrast = increaseContrast(gray)
     
     # Use canny edge detection
     edges = cv2.Canny(gray,50,150,apertureSize=3)
     
     # Apply HoughLinesP method to
     # to directly obtain line end points
-    lines_list =[]
+    
     lines = cv2.HoughLinesP(
                 edges, # Input edge image
                 1, # Distance resolution in pixels
                 np.pi/180, # Angle resolution in radians
-                threshold=100, # Min number of votes for valid line
+                threshold=30, # Min number of votes for valid line
                 minLineLength=5, # Min allowed length of line
-                maxLineGap=10 # Max allowed gap between line for joining them
+                maxLineGap=100 # Max allowed gap between line for joining them
                 )
+    
+    print(lines)
+
+    lines_list =[]
 
     # Iterate over points
     for points in lines:
@@ -35,8 +50,16 @@ def getLines(image):
         x1,y1,x2,y2=points[0]
 
         lineSlope = absoluteSlopeOfLine(x1, y1, x2, y2)
+        lineLength = lengthOfLine(x1, y1, x2, y2)
 
-        if(lineSlope < 1.5 and lineSlope > 0.375 and lengthOfLine(x1, y1, x2, y2) > 80):
+
+
+        if(lineSlope < MAX_LINE_SLOPE and lineSlope > MIN_LINE_SLOPE and lineLength > MIN_LINE_LENGTH):
+
+            print("Line coordinates: ", x1, y1, x2, y2)
+            print("Line slope: ", lineSlope)
+            print("Line length: ", lineLength)
+
             # Draw the lines joing the points
             # On the original image
             cv2.line(image,(x1,y1),(x2,y2),(0,255,0),2)
@@ -46,8 +69,39 @@ def getLines(image):
   
     # Save the result image
 
-
     return image, lines_list
+    #return image, lines_list
+
+def region_selection(image):
+	"""
+	Determine and cut the region of interest in the input image.
+	Parameters:
+		image: we pass here the output from canny where we have
+		identified edges in the frame
+	"""
+	# create an array of the same size as of the input image
+	mask = np.zeros_like(image)
+	# if you pass an image with more then one channel
+	if len(image.shape) > 2:
+		channel_count = image.shape[2]
+		ignore_mask_color = (255,) * channel_count
+	# our image only has one channel so it will go under "else"
+	else:
+		# color of the mask polygon (white)
+		ignore_mask_color = 255
+	# creating a polygon to focus only on the road in the picture
+	# we have created this polygon in accordance to how the camera was placed
+	rows, cols = image.shape[:2]
+	bottom_left = [cols * 0.1, rows * 0.75]
+	top_left	 = [cols * 0.1, rows * 0.5]
+	bottom_right = [cols * 0.9, rows * 0.75]
+	top_right = [cols * 0.9, rows * 0.5]
+	vertices = np.array([[bottom_left, top_left, top_right, bottom_right]], dtype=np.int32)
+	# filling the polygon with white color and generating the final mask
+	cv2.fillPoly(mask, vertices, ignore_mask_color)
+	# performing Bitwise AND on the input image and mask to get only the edges on the road
+	masked_image = cv2.bitwise_and(image, mask)
+	return masked_image
 
 
 if __name__ == "__main__":
@@ -69,7 +123,7 @@ if __name__ == "__main__":
     
     image, lines_list = getLines(image)
 
-    print(lines_list)
+    print("lines list: ", lines_list)
 
     cv2.imshow('detectedLines.png',image)
     cv2.waitKey(0)
