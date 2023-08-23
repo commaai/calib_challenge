@@ -3,16 +3,49 @@ import numpy as np
 import argparse
 
 from contrast_test import increaseContrast
+from line_intersection import getIntersection, plot_lines_and_intersection
 
 MAX_LINE_SLOPE = 1.5
 MIN_LINE_SLOPE = 0.1
 MIN_LINE_LENGTH = 80
 
-def absoluteSlopeOfLine(x1, y1, x2, y2):
-    return abs((y2-y1)/(x2-x1))
+SENSOR_WIDTH = 1164
+SENSOR_HEIGHT = 874
+
+ACCEPTANCE_BOX_LOWER_LEFT = [(SENSOR_HEIGHT/2) - SENSOR_HEIGHT * 0.1, (SENSOR_WIDTH/2) - SENSOR_WIDTH * 0.1]
+ACCEPTANCE_BOX_UPPER_RIGHT = [(SENSOR_HEIGHT/2) + SENSOR_HEIGHT * 0.1, (SENSOR_WIDTH/2) + SENSOR_WIDTH * 0.1]
+
+def slopeOfLine(x1, y1, x2, y2):
+    return (y2-y1)/(x2-x1)
 
 def lengthOfLine(x1, y1, x2, y2):
     return np.sqrt((x2-x1)**2 + (y2-y1)**2) 
+
+def checkRegion(line_equation, lowerLeft=ACCEPTANCE_BOX_LOWER_LEFT, upperRight=ACCEPTANCE_BOX_UPPER_RIGHT):
+
+    m = line_equation[0]
+    n = line_equation[1]
+    b = line_equation[2]
+    #print(m, n, b)
+
+    lowerLeftX = b + lowerLeft[1] * m   
+    #print(lowerLeftX, lowerLeft[0], upperRight[0])  
+    if(lowerLeft[0] <= lowerLeftX <= upperRight[0]):
+        return True
+    
+    upperRightX = b - upperRight[1] * m
+    if(upperRight[0] <= upperRightX <= upperRight[0]):
+        return True
+    
+    lowerLeftY = b - lowerLeft[0] * n
+    if(lowerLeft[1] <= lowerLeftY <= upperRight[1]):
+        return True
+    
+    upperRightY = b - upperRight[0] * n
+    if(upperRight[1] <= upperRightY <= upperRight[1]):
+        return True
+    
+    return False
 
 
 def getLines(image):
@@ -40,7 +73,7 @@ def getLines(image):
                 maxLineGap=100 # Max allowed gap between line for joining them
                 )
     
-    print(lines)
+    #print(lines)
 
     lines_list =[]
 
@@ -49,22 +82,30 @@ def getLines(image):
         # Extracted points nested in the list
         x1,y1,x2,y2=points[0]
 
-        lineSlope = absoluteSlopeOfLine(x1, y1, x2, y2)
+        lineSlope = slopeOfLine(x1, y1, x2, y2)
         lineLength = lengthOfLine(x1, y1, x2, y2)
 
 
 
-        if(lineSlope < MAX_LINE_SLOPE and lineSlope > MIN_LINE_SLOPE and lineLength > MIN_LINE_LENGTH):
+        if(abs(lineSlope) < MAX_LINE_SLOPE and abs(lineSlope) > MIN_LINE_SLOPE and lineLength > MIN_LINE_LENGTH):
 
-            print("Line coordinates: ", x1, y1, x2, y2)
-            print("Line slope: ", lineSlope)
-            print("Line length: ", lineLength)
+            #print("Line coordinates: ", x1, y1, x2, y2)
+            #print("Line slope: ", lineSlope)
+            #print("Line length: ", lineLength)
 
-            # Draw the lines joing the points
-            # On the original image
+            b = y1 - lineSlope * x1
+            m = lineSlope
+            n = 1
+
+            lineEquation = [m, n, b]
+
+            #if(checkRegion(lineEquation)):
+
+                # Draw the lines joing the points
+                # On the original image
             cv2.line(image,(x1,y1),(x2,y2),(0,255,0),2)
             # Maintain a simples lookup list for points
-            lines_list.append([(x1,y1),(x2,y2), lengthOfLine(x1, y1, x2, y2)])
+            lines_list.append([(x1,y1),(x2,y2), lineSlope])
         
   
     # Save the result image
@@ -124,6 +165,9 @@ if __name__ == "__main__":
     image, lines_list = getLines(image)
 
     print("lines list: ", lines_list)
+    print("Num Lines: ", len(lines_list))
+
+    
 
     cv2.imshow('detectedLines.png',image)
     cv2.waitKey(0)
