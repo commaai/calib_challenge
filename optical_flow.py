@@ -129,17 +129,10 @@ def checkRegion(line_equation, lowerLeft=ACCEPTANCE_BOX_LOWER_LEFT, upperRight=A
     return False
 
 
-def opticalFlow(frame, prev_frame):
+def opticalFlow(gray, prev_gray, feature_params, lk_params, color):
 
-    feature_params = dict(maxCorners = 300, qualityLevel = 0.2, minDistance = 2, blockSize = 7)
-    lk_params = dict(winSize = (15,15), maxLevel = 2, criteria = (cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 0.03))
-
-    color = (0, 255, 0)
-
-    # Calculates sparse optical flow by Lucas-Kanade method
-    # https://docs.opencv.org/3.0-beta/modules/video/doc/motion_analysis_and_object_tracking.html#calcopticalflowpyrlk
-    prev = cv.goodFeaturesToTrack(prev_frame, mask = None, **feature_params)
-    next, status, error = cv.calcOpticalFlowPyrLK(prev_frame, frame, prev, None, **lk_params)
+    prev = cv.goodFeaturesToTrack(prev_gray, mask = None, **feature_params)
+    next, status, error = cv.calcOpticalFlowPyrLK(prev_gray, gray, prev, None, **lk_params)
     # Selects good feature points for previous position
     good_old = prev[status == 1].astype(int)
     # Selects good feature points for next position
@@ -156,14 +149,14 @@ def opticalFlow(frame, prev_frame):
         frame = cv.circle(frame, (a, b), 3, color, -1)
     # Overlays the optical flow tracks on the original frame
     output = cv.add(frame, mask)
-
+    # Updates previous frame
+    prev_gray = gray.copy()
     # Updates previous good feature points
     prev = good_new.reshape(-1, 1, 2)
     # Opens a new window and displays the output frame
-    #cv.imshow("sparse optical flow", output)
-    # Frames are read by intervals of 10 milliseconds. The programs breaks out of the while loop when the user presses the 'q' key
+    cv.imshow("sparse optical flow", output)
 
-    return output
+    return output, gray
 
 
 
@@ -183,12 +176,13 @@ def main():
     cap = cv.VideoCapture(videoPath)
     #cap = cv.VideoCapture(args.image)
 
-    '''
+#   --- Params for optical flow
+
     # params for ShiTomasi corner detection
     feature_params = dict( maxCorners = 100,
-    qualityLevel = 0.3,
-    minDistance = 7,
-    blockSize = 7 )
+                            qualityLevel = 0.3,
+                            minDistance = 7,
+                            blockSize = 7 )
 
 
     # Parameters for lucas kanade optical flow
@@ -206,7 +200,7 @@ def main():
 
     # Create a mask image for drawing purposes
     mask = np.zeros_like(old_frame)
-    '''
+#   ---
 
     pitchList, yawList = getYawPitch(textPath)
     print("total frames: ", len(pitchList))
@@ -238,7 +232,7 @@ def main():
             break
 
         frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-        output = opticalFlow(frame_gray, prev_frame)
+        output, prev_frame = opticalFlow(frame_gray, prev_frame, feature_params, lk_params, color)
 
         #if(frameNumber % 10 == 0):
             #mask = np.zeros_like(old_frame)
