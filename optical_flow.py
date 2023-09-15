@@ -129,7 +129,40 @@ def checkRegion(line_equation, lowerLeft=ACCEPTANCE_BOX_LOWER_LEFT, upperRight=A
     return False
 
 
-def opticalFlow(gray, prev_gray, feature_params, lk_params, color):
+import numpy as np
+import matplotlib.pyplot as plt
+
+def plot_lines_from_matrices(line_matrices, x_range, num_points):
+    x_values = np.linspace(x_range[0], x_range[1], num_points)
+    
+    for matrix in line_matrices:
+        slope, _, b = matrix
+        y_values = slope * x_values + b
+        plt.plot(x_values, y_values, label=f'Slope: {slope:.2f}, b: {b:.2f}')
+
+    plt.axhline(0, color='black', linewidth=0.8, linestyle='--')
+    plt.axvline(0, color='black', linewidth=0.8, linestyle='--')
+    plt.xlabel('X-axis')
+    plt.ylabel('Y-axis')
+    plt.title('Lines from Line Matrices')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+def plotLineOnFrame(x1, x2, lineEquation, frame):
+
+    m = lineEquation[0]
+    y1 = m*x1 + lineEquation[2]
+    y2 = m*x2 + lineEquation[2]
+
+    frame = cv.line(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
+
+    return frame
+
+def opticalFlow(gray, prev_gray, frame, feature_params, lk_params, color):
+
+    mask = np.zeros_like(frame)
+    lines = []
 
     prev = cv.goodFeaturesToTrack(prev_gray, mask = None, **feature_params)
     next, status, error = cv.calcOpticalFlowPyrLK(prev_gray, gray, prev, None, **lk_params)
@@ -138,25 +171,83 @@ def opticalFlow(gray, prev_gray, feature_params, lk_params, color):
     # Selects good feature points for next position
     good_new = next[status == 1].astype(int)
     # Draws the optical flow tracks
+
+    lineCounter = 0
+
     for i, (new, old) in enumerate(zip(good_new, good_old)):
-        # Returns a contiguous flattened array as (x, y) coordinates for new point
-        a, b = new.ravel()
-        # Returns a contiguous flattened array as (x, y) coordinates for old point
-        c, d = old.ravel()
+        # Returns a contiguous flattened array as (x, y) coordinates for new point (a, b)
+        x2, y2 = new.ravel()
+        # Returns a contiguous flattened array as (x, y) coordinates for old point (c, d)
+        x1, y1 = old.ravel()
         # Draws line between new and old position with green color and 2 thickness
-        mask = cv.line(mask, (a, b), (c, d), color, 2)
+        
         # Draws filled circle (thickness of -1) at new position with green color and radius of 3
-        frame = cv.circle(frame, (a, b), 3, color, -1)
+        #frame = cv.circle(frame, (a, b), 3, color, -1)
+
+        coordinates = []
+        coordinates.append([x2, y2])
+        coordinates.append([x1, y1])
+
+        slope = (y2-y1)/(x2-x1)
+        if(0 < abs(slope) < 10000):
+            lines.append(getLineMatrix(x2, y2, slope))
+
+            print(lines[lineCounter])
+
+            # Showing lines for visualization
+            y1 = SENSOR_HEIGHT
+            x1 = int(y1-lines[lineCounter][2]/lines[lineCounter][0])
+
+            if(x1 > 0 and x1 < SENSOR_WIDTH):
+                coordinates[1] = [x1, y1]
+
+            y2 = 0
+            x2 = int(y2-lines[lineCounter][2]/lines[lineCounter][0])
+            
+            if(x2 > 0 and x2 < SENSOR_WIDTH):
+                coordinates[0] = [x2, y2]
+
+
+            if(x1 < 0 or x2 > SENSOR_WIDTH):
+                x1 = 0
+                y1 = int(lines[lineCounter][2])
+                if(y1 > 0 and y1 < SENSOR_HEIGHT):
+                    coordinates[1] = [x1, y1]
+
+                x2 = SENSOR_WIDTH
+                y2 = int(x2*lines[lineCounter][0] + lines[lineCounter][2])                
+                
+                if(y2 > 0 and y2 < SENSOR_HEIGHT):
+                    coordinates[0] = [x2, y2]
+
+
+
+            print('coordinates: ', coordinates)
+            
+            lineCounter+=1
+
+            x1 = coordinates[0][0]
+            y1 = coordinates[0][1]
+            x2 = coordinates[1][0]
+            y2 = coordinates[1][1]
+        
+            mask = cv.line(frame, (x1, y1), (x2, y2), color, 3)
+
+        #print("iteration: ", i)
     # Overlays the optical flow tracks on the original frame
+
+    #print("frame: ", frame.shape)
+    #print("mask: ", mask.shape)
+
     output = cv.add(frame, mask)
     # Updates previous frame
     prev_gray = gray.copy()
     # Updates previous good feature points
     prev = good_new.reshape(-1, 1, 2)
     # Opens a new window and displays the output frame
-    cv.imshow("sparse optical flow", output)
+    #cv.imshow("sparse optical flow", output)
 
-    return output, gray
+    return output, lines
 
 
 
@@ -191,7 +282,7 @@ def main():
     criteria = (cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 0.03))
 
     # Create some random colors
-    color = np.random.randint(0, 255, (100, 3))
+    color = (0, 255, 0)
 
     # Take first frame and find corners in it
     ret, old_frame = cap.read()
@@ -220,8 +311,6 @@ def main():
 
     avgLineNum = 0
 
-    prev_frame = pitchList[0]
-
     #while(frameNumber < len(pitchList)):
     for frame in tqdm(range(len(pitchList))):
 
@@ -232,18 +321,28 @@ def main():
             break
 
         frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-        output, prev_frame = opticalFlow(frame_gray, prev_frame, feature_params, lk_params, color)
+        #print("frame", frame)
+        #print("gray", frame_gray)
 
-        #if(frameNumber % 10 == 0):
-            #mask = np.zeros_like(old_frame)
+        lineMatrix = []
+        #--- Optical Flow Method ---
+        output, lineMatrix = opticalFlow(frame_gray, old_gray, frame, feature_params, lk_params, color)
+        #print(lines)
 
+        #plot_lines_from_matrices(lines, (0, 1000), len(lines))
+
+
+        
+
+        #--- Line Detect Method ---
+        '''
         startTime = time.time()
 
         image, lines = getLines(frame)
 
         avgLineNum += len(lines)
 
-        lineMatrix = []
+
         for line in lines:
             #Getting line equation in form mx + ny = b
             #Matrix in [m, n, b]
@@ -251,10 +350,15 @@ def main():
             
             #if(checkRegion(line_equation)):
             lineMatrix.append(line_equation)
+            frame = plotLineOnFrame(SENSOR_WIDTH/1.5, SENSOR_WIDTH, line_equation, frame)
+        '''
+
+        #print(lineMatrix)
 
         #print("End of test")
         #break
         #print(lines)
+        
 
         lineMatrix = np.array(lineMatrix)
         #print("line matrix: ", lineMatrix)
@@ -263,8 +367,8 @@ def main():
         intersection = None
 
         if(len(lineMatrix) >= 2):           
-            intersection = getRANSACIntersection(lineMatrix)
-            #intersection = getIntersection(lineMatrix)
+            #intersection = getRANSACIntersection(lineMatrix)
+            intersection = getIntersection(lineMatrix)
             #print("intersection: ", intersection)
 
         if(intersection is None):
@@ -273,7 +377,11 @@ def main():
 
         #print("intersection: ", intersection)
 
-        #plot_lines_and_intersection(lineMatrix, intersection)
+        if(intersection[0] < 300):
+            plot_lines_and_intersection(lineMatrix, intersection)
+            
+        #print("intersection: ", (int(intersection[0]), int(intersection[1])))
+        output = cv.circle(frame, (int(intersection[0]), int(intersection[1])), 10, color, -1)
         intersectionList.append(intersection)
 
         horizontalPixelDeviation = abs(intersection[0] - SENSOR_WIDTH/2)
@@ -292,6 +400,7 @@ def main():
         #cv.imshow('frame', image)
 
         cv.imshow("output", output)
+        cv.waitKey(0)
 
         k = cv.waitKey(30) & 0xff
 
