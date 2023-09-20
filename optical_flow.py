@@ -378,7 +378,8 @@ def main():
         #print("intersection: ", intersection)
 
         if(intersection[0] < 300):
-            plot_lines_and_intersection(lineMatrix, intersection)
+            continue
+            #plot_lines_and_intersection(lineMatrix, intersection)
             
         #print("intersection: ", (int(intersection[0]), int(intersection[1])))
         output = cv.circle(frame, (int(intersection[0]), int(intersection[1])), 10, color, -1)
@@ -399,8 +400,8 @@ def main():
         #image = addYawPitch(image, pitchList, yawList, frameNumber) 
         #cv.imshow('frame', image)
 
-        cv.imshow("output", output)
-        cv.waitKey(0)
+        #cv.imshow("output", output)
+        #cv.waitKey(0)
 
         k = cv.waitKey(30) & 0xff
 
@@ -420,7 +421,7 @@ def main():
         frameNumber += 1
 
     avgLineNum = avgLineNum/len(pitchList)
-    print("----------------------", avgLineNum)
+    #print("----------------------", avgLineNum)
 
     cv.destroyAllWindows()
 
