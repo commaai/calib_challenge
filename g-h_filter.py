@@ -6,6 +6,9 @@ START_Y_VALUE = 0.0358204
 START_DX = 5.99e-06
 START_DY = 1.36e-05
 
+# ----------- Note: 2023-9-20 -----------
+# If x or y is out of range, then increase residual weight
+
 def g_h_filter(data, x0, dx, g, h, dt=1.):
     x_est = x0
     results = []

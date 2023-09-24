@@ -222,7 +222,7 @@ def opticalFlow(gray, prev_gray, frame, feature_params, lk_params, color):
 
 
 
-            print('coordinates: ', coordinates)
+            #print('coordinates: ', coordinates)
             
             lineCounter+=1
 

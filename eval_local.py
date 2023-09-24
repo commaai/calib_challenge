@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import math
 
 #TEST_DIR = './data/03_1691722614_filtered.txt'
-TEST_DIR = './data/00_1691722614_filtered.txt'
+TEST_DIR = './data/3_1695183450.706041.txt'
 GT_DIR = 'labeled/'
 
 #Finding Mean Squared Error
@@ -44,7 +44,7 @@ def gather_data():
 
   adjusted_length = len(gt)
 
-  for index in range(len(gt)):
+  for index in range(len(test)):
 
     if(max_x < abs(gt[index][0]-control_x)):
       max_x = abs(gt[index][0]-control_x)
@@ -90,17 +90,18 @@ def gather_data():
 
   return actual_state_x, actual_state_y, prediction_state_x, prediction_state_y
 
-def plot_comparison(actual_state_x, actual_state_y, prediction_state_x, prediction_state_y):
+def plot_comparison(actual_state_x, actual_state_y, prediction_state_x, prediction_state_y, display_x):
 
   plotIndex = int(len(actual_state_x)/1)
   print(plotIndex)
   print(len(actual_state_x))
 
-  #plt.plot(range(plotIndex), actual_state_x[:plotIndex], label='Actual State X', linestyle='-')
-  plt.plot(range(plotIndex), actual_state_y[:plotIndex], label='Actual State Y', linestyle='-')
-
-  #plt.plot(range(plotIndex), prediction_state_x[:plotIndex], label='Predicted State X', linestyle='--')
-  plt.plot(range(plotIndex), prediction_state_y[:plotIndex], label='Predicted State Y', linestyle='--')
+  if(display_x):
+    plt.plot(range(plotIndex), actual_state_x[:plotIndex], label='Actual State X', linestyle='-')
+    plt.plot(range(plotIndex), prediction_state_x[:plotIndex], label='Predicted State X', linestyle='--')
+  else:
+    plt.plot(range(plotIndex), actual_state_y[:plotIndex], label='Actual State Y', linestyle='-')
+    plt.plot(range(plotIndex), prediction_state_y[:plotIndex], label='Predicted State Y', linestyle='--')
 
   plt.xlabel('Time Step')
   plt.ylabel('State')
@@ -120,6 +121,8 @@ if __name__ == '__main__':
   gt = np.loadtxt(GT_DIR + label_index + '.txt')
   test = np.loadtxt(TEST_DIR)
 
-  accuracy(gt, test)
-  print("-------")
+  #accuracy(gt, test)
+
+  actual_state_x, actual_state_y, prediction_state_x, prediction_state_y = gather_data()
+  plot_comparison(actual_state_x, actual_state_y, prediction_state_x, prediction_state_y, True)
 
