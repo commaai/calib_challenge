@@ -192,7 +192,7 @@ def opticalFlow(gray, prev_gray, frame, feature_params, lk_params, color):
         if(0 < abs(slope) < 10000):
             lines.append(getLineMatrix(x2, y2, slope))
 
-            print(lines[lineCounter])
+            #print(lines[lineCounter])
 
             # Showing lines for visualization
             y1 = SENSOR_HEIGHT
@@ -296,11 +296,12 @@ def main():
     pitchList, yawList = getYawPitch(textPath)
     print("total frames: ", len(pitchList))
 
-    frameNumber = 0
     x1 = 10
     x2 = 600
 
     y = 30
+
+    frameNumber = 0
 
     intersectionList = []
     verticalPixelDeviationList = []
@@ -312,7 +313,8 @@ def main():
     avgLineNum = 0
 
     #while(frameNumber < len(pitchList)):
-    for frame in tqdm(range(len(pitchList))):
+    for index in tqdm(range(len(pitchList))):
+        frame = pitchList[index]
 
         ret, frame = cap.read() 
 
@@ -371,19 +373,28 @@ def main():
             intersection = getIntersection(lineMatrix)
             #print("intersection: ", intersection)
 
-        if(intersection is None):
+            #print("intersection: ", intersection)
+
+        elif(intersection is None or len(lineMatrix) < 2):
             intersection = [SENSOR_WIDTH/2, SENSOR_HEIGHT/2]
             #Return center of frame if no lines detected      
 
         #print("intersection: ", intersection)
 
-        if(intersection[0] < 300):
-            continue
-            #plot_lines_and_intersection(lineMatrix, intersection)
+            if(intersection[0] < 300):
+                continue
+                #plot_lines_and_intersection(lineMatrix, intersection)
             
         #print("intersection: ", (int(intersection[0]), int(intersection[1])))
         output = cv.circle(frame, (int(intersection[0]), int(intersection[1])), 10, color, -1)
         intersectionList.append(intersection)
+        
+        '''
+        print("list length: ", len(intersectionList))
+        print("intersection: ", intersection)
+        print("frame number: ", index)
+        print("-------")
+        '''
 
         horizontalPixelDeviation = abs(intersection[0] - SENSOR_WIDTH/2)
         verticalPixelDeviation = abs(intersection[1] - SENSOR_HEIGHT/2)
@@ -400,7 +411,7 @@ def main():
         #image = addYawPitch(image, pitchList, yawList, frameNumber) 
         #cv.imshow('frame', image)
 
-        #cv.imshow("output", output)
+        cv.imshow("output", output)
         #cv.waitKey(0)
 
         k = cv.waitKey(30) & 0xff
@@ -419,6 +430,7 @@ def main():
         #print(f"Frame: {frameNumber}")
 
         frameNumber += 1
+
 
     avgLineNum = avgLineNum/len(pitchList)
     #print("----------------------", avgLineNum)

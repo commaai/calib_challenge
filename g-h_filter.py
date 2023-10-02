@@ -9,19 +9,27 @@ START_DY = 1.36e-05
 # ----------- Note: 2023-9-20 -----------
 # If x or y is out of range, then increase residual weight
 
-def g_h_filter(data, x0, dx, g, h, dt=1.):
-    x_est = x0
+def g_h_filter(data, x0, dx, dt=1., max_allowed_deviation=0.1, g=3./5, h=2./3):
+    state_estimate = x0
     results = []
+    
+    previous_state = x0
+    
     for z in data:
         # prediction step
-        x_pred = x_est + (dx * dt)
+
+        if(abs(z - previous_state) > max_allowed_deviation):
+            g = 9./10
+
+        state_prediction = state_estimate + (dx * dt)
         dx = dx
 
         # update step
-        residual = z - x_pred
+        residual = z - state_prediction
         dx = dx + h * (residual) / dt
-        x_est = x_pred + g * residual
-        results.append(x_est)
+        state_estimate = state_prediction + g * residual
+        results.append(state_estimate)
+        g = 3./5
     return np.array(results)
 
 def test():
@@ -54,16 +62,16 @@ def test():
     print("Filtered States:", filtered_data)    
 
 def filter_data():
-    states = np.loadtxt('data/3_1695183450.706041.txt')
+    states = np.loadtxt('data/3_1695528148.466924.txt')
 
     x_coordinates = states[:,0]
     y_coordinates = states[:,1]
 
-    filtered_x = g_h_filter(data=x_coordinates, x0=START_X_VALUE, dx=START_DX, g=6./10, h=2./3, dt=1.)
-    filtered_y = g_h_filter(data=y_coordinates, x0=START_Y_VALUE, dx=START_DY, g=6./10, h=2./3, dt=1.)
+    filtered_x = g_h_filter(data=x_coordinates, x0=START_X_VALUE, dx=START_DX, dt=1.)
+    filtered_y = g_h_filter(data=y_coordinates, x0=START_Y_VALUE, dx=START_DY, dt=1.)
 
     filtered_states = np.column_stack((filtered_x, filtered_y))
-    np.savetxt('data/03_1691722614_filtered.txt', filtered_states, fmt='%.6f')
+    np.savetxt('data/03_2691722614_filtered.txt', filtered_states, fmt='%.6f')
 
 
 

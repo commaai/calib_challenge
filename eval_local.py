@@ -3,8 +3,8 @@ import sys
 import matplotlib.pyplot as plt
 import math
 
-#TEST_DIR = './data/03_1691722614_filtered.txt'
-TEST_DIR = './data/3_1695183450.706041.txt'
+#TEST_DIR = './data/03_2691722614_filtered.txt'
+TEST_DIR = './data/00_1691722614_filtered.txt'
 GT_DIR = 'labeled/'
 
 #Finding Mean Squared Error
@@ -116,12 +116,12 @@ if __name__ == '__main__':
   gt = []
   test = []
 
-  label_index = '3'
+  label_index = '0'
   print(GT_DIR + label_index + '.txt')
   gt = np.loadtxt(GT_DIR + label_index + '.txt')
   test = np.loadtxt(TEST_DIR)
 
-  #accuracy(gt, test)
+  accuracy(gt, test)
 
   actual_state_x, actual_state_y, prediction_state_x, prediction_state_y = gather_data()
   plot_comparison(actual_state_x, actual_state_y, prediction_state_x, prediction_state_y, True)
