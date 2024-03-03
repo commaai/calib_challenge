@@ -159,7 +159,32 @@ def plotLineOnFrame(x1, x2, lineEquation, frame):
 
     return frame
 
-def opticalFlow(gray, prev_gray, frame, feature_params, lk_params, color):
+def returnIntersection(lineMatrix):
+    lineMatrix = np.array(lineMatrix)
+        #print("line matrix: ", lineMatrix)
+        #print("size: ", len(lineMatrix))
+
+    intersection = None
+
+    if(len(lineMatrix) >= 2):           
+        #intersection = getRANSACIntersection(lineMatrix)
+        intersection = getIntersection(lineMatrix)
+        #print("intersection: ", intersection)
+
+        #print("intersection: ", intersection)
+
+    elif(intersection is None or len(lineMatrix) < 2):
+        #intersection = [SENSOR_WIDTH/2, SENSOR_HEIGHT/2]
+        intersection = [0, 0]
+        #Return center of frame if no lines detected      
+
+    #print("intersection: ", intersection)
+
+    return intersection
+        
+    #print("intersection: ", (int(intersection[0]), int(intersection[1])))
+
+def opticalFlow(gray, prev_gray, frame, feature_params, lk_params, color=(0, 255, 0)):
 
     mask = np.zeros_like(frame)
     lines = []
@@ -249,7 +274,14 @@ def opticalFlow(gray, prev_gray, frame, feature_params, lk_params, color):
 
     return output, lines
 
+def coordinatesToGyro(x, y):
+    horizontalPixelDeviation = abs(x - SENSOR_WIDTH/2)
+    verticalPixelDeviation = abs(y - SENSOR_HEIGHT/2)
 
+    yawInference = math.atan(horizontalPixelDeviation / FOCAL_LENGTH)
+    pitchInference = math.atan(verticalPixelDeviation / FOCAL_LENGTH)
+
+    return yawInference, pitchInference
 
 def main():
     
@@ -278,8 +310,9 @@ def main():
 
     # Parameters for lucas kanade optical flow
     lk_params = dict( winSize = (15, 15),
-    maxLevel = 2,
-    criteria = (cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 0.03))
+        maxLevel = 2,
+        criteria = (cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 0.03)
+    )
 
     # Create some random colors
     color = (0, 255, 0)
@@ -361,31 +394,8 @@ def main():
         #break
         #print(lines)
         
-
-        lineMatrix = np.array(lineMatrix)
-        #print("line matrix: ", lineMatrix)
-        #print("size: ", len(lineMatrix))
-
-        intersection = None
-
-        if(len(lineMatrix) >= 2):           
-            #intersection = getRANSACIntersection(lineMatrix)
-            intersection = getIntersection(lineMatrix)
-            #print("intersection: ", intersection)
-
-            #print("intersection: ", intersection)
-
-        elif(intersection is None or len(lineMatrix) < 2):
-            intersection = [SENSOR_WIDTH/2, SENSOR_HEIGHT/2]
-            #Return center of frame if no lines detected      
-
-        #print("intersection: ", intersection)
-
-            if(intersection[0] < 300):
-                continue
-                #plot_lines_and_intersection(lineMatrix, intersection)
-            
-        #print("intersection: ", (int(intersection[0]), int(intersection[1])))
+        intersection = returnIntersection(lineMatrix)
+        
         output = cv.circle(frame, (int(intersection[0]), int(intersection[1])), 10, color, -1)
         intersectionList.append(intersection)
         
@@ -396,14 +406,7 @@ def main():
         print("-------")
         '''
 
-        horizontalPixelDeviation = abs(intersection[0] - SENSOR_WIDTH/2)
-        verticalPixelDeviation = abs(intersection[1] - SENSOR_HEIGHT/2)
-
-        yawInference = math.atan(horizontalPixelDeviation / FOCAL_LENGTH)
-        pitchInference = math.atan(verticalPixelDeviation / FOCAL_LENGTH)
-
-        horizontalPixelDeviationList.append(horizontalPixelDeviation)
-        verticalPixelDeviationList.append(verticalPixelDeviation)
+        yawInference, pitchInference = coordinatesToGyro(intersection[0], intersection[1])
 
         yawInferenceList.append(yawInference)
         pitchInferenceList.append(pitchInference)

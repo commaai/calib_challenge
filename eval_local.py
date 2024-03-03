@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import math
 
 #TEST_DIR = './data/03_2691722614_filtered.txt'
-TEST_DIR = './data/00_1691722614_filtered.txt'
+TEST_DIR = './data/3_1696221257.000354.txt'
 GT_DIR = 'labeled/'
 
 #Finding Mean Squared Error
@@ -20,7 +20,7 @@ def accuracy(gt, test):
   mses.append(get_mse(gt, test))
   percent_err_vs_all_zeros = 100*np.mean(mses)/np.mean(zero_mses)
   print(f'YOUR ERROR SCORE IS {percent_err_vs_all_zeros:.2f}% (lower is better)') 
-
+  return percent_err_vs_all_zeros
 
 def gather_data():
   actual_state_x = []
@@ -90,7 +90,7 @@ def gather_data():
 
   return actual_state_x, actual_state_y, prediction_state_x, prediction_state_y
 
-def plot_comparison(actual_state_x, actual_state_y, prediction_state_x, prediction_state_y, display_x):
+def plot_comparison(actual_state_x, actual_state_y, prediction_state_x, prediction_state_y, display_x, error):
 
   plotIndex = int(len(actual_state_x)/1)
   print(plotIndex)
@@ -105,7 +105,7 @@ def plot_comparison(actual_state_x, actual_state_y, prediction_state_x, predicti
 
   plt.xlabel('Time Step')
   plt.ylabel('State')
-  plt.title('Figure 1: Comparison of Measured and Filter state against actual state')
+  plt.title(f'Figure 1: Comparison of Measured and Filter state against actual state {error:.2f}%')
   plt.legend()
 
   plt.grid(True)
@@ -121,8 +121,10 @@ if __name__ == '__main__':
   gt = np.loadtxt(GT_DIR + label_index + '.txt')
   test = np.loadtxt(TEST_DIR)
 
-  accuracy(gt, test)
+  error = accuracy(gt, test)
 
   actual_state_x, actual_state_y, prediction_state_x, prediction_state_y = gather_data()
-  plot_comparison(actual_state_x, actual_state_y, prediction_state_x, prediction_state_y, True)
+  print("actual x: ", prediction_state_x[20])
+  print("actual y: ", prediction_state_y[20])
+  #plot_comparison(actual_state_x, actual_state_y, prediction_state_x, prediction_state_y, False, error)
 
