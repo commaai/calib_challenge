@@ -1,0 +1,84 @@
+[tool.poetry]
+name = "hevc-prediction-eval"
+version = "0.1.0"
+description = "HEVC prediction evaluation project"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+packages = [{include = "*", from = "."}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+numpy = "^1.20.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.11.0"
+
+[tool.poetry.scripts]
+test = "pytest:main"
+tests = "pytest:main"
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--strict-config",
+]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "slow: Slow running tests",
+]
+filterwarnings = [
+    "error",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["."]
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/virtualenv/*",
+    "*/.venv/*",
+    "*/dist/*",
+    "*/build/*",
+    "*.egg-info/*",
+    "setup.py",
+    "conftest.py",
+    "eval.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if __name__ == .__main__.:",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if False:",
+    "pass",
+]
+show_missing = true
+precision = 2
+fail_under = 80
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
