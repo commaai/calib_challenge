@@ -46,6 +46,6 @@ Hints
 - The dataset is tiny, use caution if using ML.
 
 
-<s> $500 Prize </s> CLAIMED
+<s> $500 Prize </s> CLAIMED //Proposing that this section be deleted and we highlight the opportunity to apply to comma.ai if anyone takes a crack at these problems
 ------
 The first submission that scores an error under 25% on the unlabeled set, will receive a $500 prize.
